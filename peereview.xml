@@ -15,25 +15,25 @@
   <action name="peereview.answer" show-command="false">
      <shell lang="python">peereview.answer("%f", "%l")</shell>
   </action>
-  
-  <contextual action="peereview.answer" >
-    <Title>Peereview/Answer comment</Title>
-  </contextual>
-  
-  <contextual action="peereview.load" >
+  <contextual action="peereview.load">
     <Title>Peereview/Load comments</Title>
   </contextual>
-  
-  <contextual action="peereview.clear" >
-    <Title>Peereview/Clear all comments</Title>
+  <contextual action="" after="Peereview/Load comments">  
+    <Title>Peereview/</Title>
   </contextual>
-  
-  <contextual action="peereview.add_message" >
+  <contextual action="peereview.add_message">
     <Title>Peereview/Add comment</Title>
   </contextual>
-  
+  <contextual action="peereview.answer">
+    <Title>Peereview/Answer comment</Title>
+  </contextual>
+  <contextual action="" after="Peereview/Answer comment">  
+    <Title>Peereview/---</Title>
+  </contextual>
   <contextual action="peereview.close" >
     <Title>Peereview/Close subject</Title>
   </contextual>
-  
+  <contextual action="peereview.clear" >
+    <Title>Peereview/Clear all comments</Title>
+  </contextual>
 </peereview>

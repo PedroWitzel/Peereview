@@ -1,15 +1,13 @@
 import GPS
 import re
 import os
-
-## The following line is the usual way to make pygobject visible
 from gi.repository import Gtk, GLib, Gdk, GObject
 
 messages_file="peereview.gnat"
 category="Peereview"
-subject_id=1
+subject_id=0
 
-class AnswerWindow(Gtk.Window):
+class CloseWindow(Gtk.Window):
    def __init__(self, filename, line, subject_ids):
 
       # Class attributes
@@ -17,21 +15,20 @@ class AnswerWindow(Gtk.Window):
       self.line = line
 
       # Create window instance
-      Gtk.Window.__init__(self, title="Answer comment")
+      Gtk.Window.__init__(self, title="Close comment")
       
       # Find parent
       msg_win = GPS.MDI.get("Messages").pywidget().get_toplevel()
-      if isinstance (msg_win, Gtk.Window):
-         self.set_transient_for (msg_win)
+      if isinstance(msg_win, Gtk.Window):
+         self.set_transient_for(msg_win)
       self.set_position(Gtk.WindowPosition.CENTER_ON_PARENT)
-      
 
       # Create list box
       grid = Gtk.Grid()
       self.add(grid)
 
       # Add comment label
-      label = Gtk.Label("Comment #")     
+      label = Gtk.Label("Remove comment")
       grid.add(label)
 
       # Create combo to select the subject to answer
@@ -46,11 +43,102 @@ class AnswerWindow(Gtk.Window):
       grid.attach_next_to(self.combo, label, Gtk.PositionType.RIGHT, 2, 1)
       
       # Add comment label
-      label2 = Gtk.Label("Answer", xalign=0)     
+      buttonAdd = Gtk.Button("_Remove", use_underline=True)
+      buttonAdd.connect("clicked", self.on_add_clicked)
+      grid.attach_next_to(buttonAdd, label, Gtk.PositionType.BOTTOM, 2,1)
+
+      buttonCancel = Gtk.Button("_Cancel", use_underline=True)
+      buttonCancel.connect("clicked", self.on_close_clicked)
+      grid.attach_next_to(buttonCancel, buttonAdd, Gtk.PositionType.RIGHT, 1, 1)
+
+
+   def on_add_clicked(self, button):
+      # Get subject id from combo box
+      subject = ""
+      tree_iter = self.combo.get_active_iter()
+      if tree_iter != None:
+         model = self.combo.get_model()
+         subject = model[tree_iter][0]
+
+      # Confirm with your to delete
+      if not GPS.MDI.yes_no_dialog("Are you certain to delete comment %s?" % subject):
+         return
+
+      # Open comments file
+      lines = []
+      with open(messages_file, "r+") as f:
+         lines = f.readlines()
+
+      # Line index of subject
+      start_idxs = [i for i in range(len(lines)) if "%s:" % (subject) in lines[i]]
+      start_idx = start_idxs[0] if start_idxs is not None and len(start_idxs) > 0 else 0
+      
+      # Line index of next subject
+      insert_idxs = [i for i in range(start_idx+1, len(lines)) if re.search(' #\d+:', lines[i]) is not None]
+      end_idx = insert_idxs[0] if insert_idxs is not None and len(insert_idxs) > 0 else len(lines)
+
+      # Update file
+      with open(messages_file, "w") as f:
+         for idx in range(len(lines)):
+            if idx not in range(start_idx, end_idx):
+               f.write(lines[idx])
+ 
+      # Clear Peereview locations
+      GPS.Locations.remove_category(category)
+
+      # Reload file to add all comments
+      for comment in open(messages_file):
+         GPS.Locations.parse(comment.rstrip('\n'), category)
+      
+      self.destroy()
+
+
+   def on_close_clicked(self, button):
+      self.destroy()
+
+
+class AnswerWindow(Gtk.Window):
+   def __init__(self, filename, line, subject_ids):
+
+      # Class attributes
+      self.filename = filename
+      self.line = line
+
+      # Create window instance
+      Gtk.Window.__init__(self, title="Answer comment")
+      
+      # Find parent
+      msg_win = GPS.MDI.get("Messages").pywidget().get_toplevel()
+      if isinstance(msg_win, Gtk.Window):
+         self.set_transient_for(msg_win)
+      self.set_position(Gtk.WindowPosition.CENTER_ON_PARENT)
+      
+
+      # Create list box
+      grid = Gtk.Grid()
+      self.add(grid)
+
+      # Add comment label
+      label = Gtk.Label("Comment")
+      grid.add(label)
+
+      # Create combo to select the subject to answer
+      store = Gtk.ListStore(str);
+      for subject in subject_ids:
+         store.append(["#%d" % subject])
+      self.combo = Gtk.ComboBox.new_with_model(store)
+      renderer_text = Gtk.CellRendererText()
+      self.combo.pack_start(renderer_text, True)
+      self.combo.add_attribute(renderer_text, "text", 0)
+      self.combo.set_active(0)
+      grid.attach_next_to(self.combo, label, Gtk.PositionType.RIGHT, 2, 1)
+      
+      # Add comment label
+      label2 = Gtk.Label("Answer", xalign=0)
       grid.attach_next_to(label2, label, Gtk.PositionType.BOTTOM, 3, 1)
  
       # Add comment label
-      self.text_entry = Gtk.Entry()     
+      self.text_entry = Gtk.Entry()
       self.text_entry.set_size_request(500, 20)
       self.text_entry.set_property("truncate-multiline", True)
       self.text_entry.connect('activate', self.on_add_clicked)
@@ -87,7 +175,7 @@ class AnswerWindow(Gtk.Window):
       # Update file
       with open(messages_file, "w") as f:
          for line in lines:
-            f.write(line) 
+            f.write(line)
       # Clear Peereview locations
       GPS.Locations.remove_category(category)
 
@@ -97,21 +185,27 @@ class AnswerWindow(Gtk.Window):
       
       self.destroy()
 
+
    def on_close_clicked(self, button):
       self.destroy()
+
 
 def add_message(filename, line):
 
    # Increment subject id
    global subject_id
-   subject_id = subject_id + 1
 
    # Request message to enter
-   title = "Comment #%d at [%s:%s]" % (subject_id, filename, line)
+   title = "Comment #%d at [%s:%s]" % (subject_id + 1, filename, line)
    message=GPS.MDI.input_dialog(title, "Comment")
-   
+   if message is None or len(message) == 0:
+      return
+
+   # New subject
+   subject_id = subject_id + 1
+
    # Create the message pattern to open in Locations window
-   entry = "%s:%s: #%s:%s" % (filename, line, subject_id, message)
+   entry = "%s:%s: #%s:%s" % (filename, line, subject_id, message[0])
 
    # Append new message in file
    with open(messages_file, "a") as comment:
@@ -119,21 +213,24 @@ def add_message(filename, line):
 
    reload_file()
 
-def reload_file ():
+
+def reload_file():
    # Clear Peereview locations
    GPS.Locations.remove_category(category)
 
    # Reload file to add all comments
    for comment in open(messages_file):
       GPS.Locations.parse(comment.rstrip('\n'), category)
+
    
-def answer (filename, line):
+def answer(filename, line):
    # Show window to user insert its response
    win = AnswerWindow(filename, line, get_subjects(filename, line))
    win.show_all()
    win.text_entry.grab_focus()
 
-def get_subjects (filename, line):
+
+def get_subjects(filename, line):
    # Get all lines from reference file
    with open(messages_file, 'r') as input_file:
       lines="".join(input_file.readlines())
@@ -145,36 +242,29 @@ def get_subjects (filename, line):
    # Return an unique list with all subjects
    return list(set([int(item) for item in subjects]))
 
-def clean_messages ():
-   open(messages_file, 'w').close()
 
-def close_subject (filename, line):
-   # TODO - REQUEST USER FOR SUBJECT ID
-   # Get subjects in that particular line
-   subjects=get_subjects(filename, line)
-
-   message=GPS.MDI.input_dialog("Chose subject to close", ["#%d" % num for num in subjects])
-   # Create pattern to look for in a line to look for the subject to delete
-   subject_pattern="%s:%d: #%d" % (filename, line, subject_id)
-
-   # Open temporary file that will hold everything
-   # but the subject at hand
-   with open(".temp", 'w') as temp_file:
-      for line in open(messages_file):
-         if subject_pattern not in line:
-            temp_file.write(line)
-
-   # Rename temporary file to the original
-   os.rename(".temp", messages_file)
+def clean_messages():
+   if GPS.MDI.yes_no_dialog("CAUTION: This will remove ALL comments from all files\nDo you confirm?"):
+      open(messages_file, 'w').close()
+      GPS.Locations.remove_category(category)
 
 
-def load():
+def close_subject(filename, line):
+   # Show window to user insert its response
+   win = CloseWindow(filename, line, get_subjects(filename, line))
+   win.show_all()
+
+ 
+def load(name=0):
    global subject_id
 
-   # Load file into the Locations view
-   with open(messages_file, "r") as msg_file:
-      GPS.Locations.parse("".join(msg_file.readlines()), category) 
+   if os.path.isfile(messages_file):
+      # Load file into the Locations view
+      with open(messages_file, "r") as msg_file:
+         GPS.Locations.parse("".join(msg_file.readlines()), category)
 
-   # Update maximum subject id
-   subject_id = max(get_subjects('''.*''', '''\d+'''))
+      # Update maximum subject id
+      subjects = get_subjects('''.*''', '''\d+''')
+      subject_id = max(subjects) if subjects is not None and len(subjects) > 0 else 0
 
+GPS.Hook("desktop_loaded").add(load)
