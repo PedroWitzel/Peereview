@@ -19,60 +19,37 @@ class AnswerWindow(Gtk.Window):
       # Create window instance
       Gtk.Window.__init__(self, title="Answer comment")
       self.set_border_width(10)
-      hbox = Gtk.Box(spacing=6)
-      self.add(hbox)
 
       # Create list box
-      table = Gtk.Table(4, 4, True)
-      table.set_selection_mode(Gtk.SelectionMode.NONE)
-      hbox.pack_start(table, True, True, 0)
+      grid = Gtk.Grid()
+      self.add(grid)
 
-      # Subject row
-      row = Gtk.ListBoxRow()
-      hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
-      row.add(hbox)
-      
       # Add comment label
       label = Gtk.Label("Choose comment", xalign=0)     
-      hbox.pack_start(label, True, True, 0)
+      grid.add(label)
       
       # Create combo to select the subject to answer
       self.combo = Gtk.ComboBoxText()
       for subject in subject_ids:
-         self.combo.append_text(subject)
-      hbox.pack_start(self.combo, True, True, 0)
+         self.combo.append_text("#%d" % subject)
+      grid.attach_next_to(label, self.combo, Gtk.PositionType.RIGHT, 1, 1)
 
-      # Answer row
-      row = Gtk.ListBoxRow()
-      hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
-      row.add(hbox)
-      
       # Add comment label
-      label = Gtk.Label("Answer", xalign=0)     
-      hbox.pack_start(label, True, True, 0)
+      label2 = Gtk.Label("Answer", xalign=0)     
+      grid.attach_next_to(label, label2, Gtk.PositionType.BOTTOM, 3, 1)
  
-      # Answer text row
-      row = Gtk.ListBoxRow()
-      hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
-      row.add(hbox)
-      
       # Add comment label
       self.text_entry = Gtk.Entry()     
-      hbox.pack_start(self.text_entry, True, True, 0)
+      grid.attach_next_to(label2, self.text_entry, Gtk.PositionType.BOTTOM, 3, 3)
  
-      # Buttons row
-      row = Gtk.ListBoxRow()
-      hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
-      row.add(hbox)
-      
       # Add comment label
-      button = Gtk.Button("_Add", use_underline=True)
-      button.connect("clicked", self.on_add_clicked)
-      hbox.pack_start(button, True, True, 0)
+      buttonAdd = Gtk.Button("_Add", use_underline=True)
+      buttonAdd.connect("clicked", self.on_add_clicked)
+      grid.attach_next_to(self.text_entry, buttonAdd, Gtk.PositionType.BOTTOM, 1,1)
 
-      button = Gtk.Button("_Cancel", use_underline=True)
-      button.connect("clicked", self.on_close_clicked)
-      hbox.pack_start(button, True, True, 0) 
+      buttonCancel = Gtk.Button("_Cancel", use_underline=True)
+      buttonCancel.connect("clicked", self.on_close_clicked)
+      grid.attach_next_to(buttonAdd, buttonCancel, Gtk.PositionType.RIGHT, 1, 1)
 
    def on_add_clicked(self, button):
       subject = self.combo.get_active_text()
@@ -125,6 +102,9 @@ def add_message(filename, line):
 def answer (filename, line):
    win = AnswerWindow(filename, line, get_subjects(filename, line))
    win.show_all()
+   Gtk.main()
+
+
 def get_subjects (filename, line):
    # Get all lines from reference file
    with open(messages_file, 'r') as input_file:
