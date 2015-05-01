@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<peereview>
+  <action name="peereview.add_message" show-command="false">
+     <shell lang="python">peereview.add_message("%f", "%l")</shell>
+  </action>
+  <action name="peereview.close" show-command="false">
+     <shell lang="python">peereview.close_subject("%f", "%l")</shell>
+  </action>
+   <action name="peereview.clear" show-command="false" >
+     <shell lang="python">peereview.clean_messages()</shell>
+  </action>
+  <action name="peereview.load" show-command="false">
+     <shell lang="python">peereview.load()</shell>
+  </action>
+  <action name="peereview.answer" show-command="false">
+     <shell lang="python">peereview.answer("%f", "%l")</shell>
+  </action>
+  
+  <contextual action="peereview.answer" >
+    <Title>Peereview/Answer comment</Title>
+  </contextual>
+  
+  <contextual action="peereview.load" >
+    <Title>Peereview/Load comments</Title>
+  </contextual>
+  
+  <contextual action="peereview.clear" >
+    <Title>Peereview/Clear all comments</Title>
+  </contextual>
+  
+  <contextual action="peereview.add_message" >
+    <Title>Peereview/Add comment</Title>
+  </contextual>
+  
+  <contextual action="peereview.close" >
+    <Title>Peereview/Close subject</Title>
+  </contextual>
+  
+</peereview>
