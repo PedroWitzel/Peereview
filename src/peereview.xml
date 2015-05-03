@@ -9,6 +9,9 @@
    <action name="peereview.clear" show-command="false" >
      <shell lang="python">peereview.clean_messages()</shell>
   </action>
+  <action name="peereview.change_file" show-command="false">
+     <shell lang="python">peereview.change_filename()</shell>
+  </action>
   <action name="peereview.load" show-command="false">
      <shell lang="python">peereview.load()</shell>
   </action>
@@ -18,7 +21,10 @@
   <contextual action="peereview.load">
     <Title>Peereview/Load comments</Title>
   </contextual>
-  <contextual action="" after="Peereview/Load comments">  
+  <contextual action="peereview.change_file">
+    <Title>Peereview/Change comments file</Title>
+  </contextual>
+  <contextual action="" after="Peereview/Change comments file">  
     <Title>Peereview/</Title>
   </contextual>
   <contextual action="peereview.add_message">

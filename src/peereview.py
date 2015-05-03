@@ -261,18 +261,29 @@ def close_subject(filename, line):
    win.show_all()
 
 
-def is_file_wr():
-   if not os.access(messages_file, os.W_OK):
+def is_file_wr(file_name=messages_file):
+   if not os.access(file_name, os.W_OK):
       GPS.MDI.dialog("CAUTION: peereview.gnat file is Read-Only.\nPlease change its permission and reload the file.")
       return False
    else:
       return True
 
 
+def change_filename():
+   global messages_file
+
+   new_file = GPS.MDI.file_selector("*.gnat")
+   
+   if new_file is not None and len(new_file.name()) > 0 and is_file_wr(new_file.name()):
+         messages_file = new_file.name()
+         load()
+
 def load(name=0):
    global subject_id
 
    if os.path.isfile(messages_file) and is_file_wr():
+      # Clean Locations
+      GPS.Locations.remove_category(category)
       # Load file into the Locations view
       with open(messages_file, "r") as msg_file:
          GPS.Locations.parse("".join(msg_file.readlines()), category)
