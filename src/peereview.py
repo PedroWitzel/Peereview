@@ -53,7 +53,7 @@ class CloseWindow(Gtk.Window):
 
 
    def on_add_clicked(self, button):
-      # Get subject id from combo box
+     # Get subject id from combo box
       subject = ""
       tree_iter = self.combo.get_active_iter()
       if tree_iter != None:
@@ -194,7 +194,9 @@ def add_message(filename, line):
 
    # Increment subject id
    global subject_id
-
+   if not is_file_wr():
+      return
+ 
    # Request message to enter
    title = "Comment #%d at [%s:%s]" % (subject_id + 1, filename, line)
    message=GPS.MDI.input_dialog(title, "Comment")
@@ -224,7 +226,9 @@ def reload_file():
 
    
 def answer(filename, line):
-   # Show window to user insert its response
+   if not is_file_wr():
+      return
+    # Show window to user insert its response
    win = AnswerWindow(filename, line, get_subjects(filename, line))
    win.show_all()
    win.text_entry.grab_focus()
@@ -244,21 +248,31 @@ def get_subjects(filename, line):
 
 
 def clean_messages():
-   if GPS.MDI.yes_no_dialog("CAUTION: This will remove ALL comments from all files\nDo you confirm?"):
+   if GPS.MDI.yes_no_dialog("CAUTION: This will remove ALL comments from all files\nDo you confirm?") and is_file_wr():
       open(messages_file, 'w').close()
       GPS.Locations.remove_category(category)
 
 
 def close_subject(filename, line):
-   # Show window to user insert its response
+   if not is_file_wr():
+      return
+    # Show window to user insert its response
    win = CloseWindow(filename, line, get_subjects(filename, line))
    win.show_all()
 
- 
+
+def is_file_wr():
+   if not os.access(messages_file, os.W_OK):
+      GPS.MDI.dialog("CAUTION: peereview.gnat file is Read-Only.\nPlease change its permission and reload the file.")
+      return False
+   else:
+      return True
+
+
 def load(name=0):
    global subject_id
 
-   if os.path.isfile(messages_file):
+   if os.path.isfile(messages_file) and is_file_wr():
       # Load file into the Locations view
       with open(messages_file, "r") as msg_file:
          GPS.Locations.parse("".join(msg_file.readlines()), category)
