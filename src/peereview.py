@@ -89,7 +89,7 @@ class CloseWindow(Gtk.Window):
 
       # Reload file to add all comments
       for comment in open(messages_file):
-         GPS.Locations.parse(comment.rstrip('\n'), category)
+         GPS.Locations.parse(output=comment.rstrip('\n'), category=category, highlight_category="Peereview")
       
       self.destroy()
 
@@ -182,7 +182,7 @@ class AnswerWindow(Gtk.Window):
 
       # Reload file to add all comments
       for comment in open(messages_file):
-         GPS.Locations.parse(comment.rstrip('\n'), category)
+         GPS.Locations.parse(output=comment.rstrip('\n'), category=category, highlight_category="Peereview")
       
       self.destroy()
 
@@ -225,7 +225,7 @@ def reload_file():
 
    # Reload file to add all comments
    for comment in open(messages_file):
-      GPS.Locations.parse(comment.rstrip('\n'), category)
+      GPS.Locations.parse(output=comment.rstrip('\n'), category=category, highlight_category="Peereview")
 
    
 def answer(filename, line):
@@ -289,10 +289,11 @@ def load(name=0):
       GPS.Locations.remove_category(category)
       # Load file into the Locations view
       with open(messages_file, "r") as msg_file:
-         GPS.Locations.parse("".join(msg_file.readlines()), category)
+         GPS.Locations.parse(output="".join(msg_file.readlines()), category=category, highlight_category="Peereview")
 
       # Update maximum subject id
       subjects = get_subjects('''.*''', '''\d+''')
       subject_id = max(subjects) if subjects is not None and len(subjects) > 0 else 0
 
 GPS.Hook("desktop_loaded").add(load)
+GPS.Editor.register_highlighting(category="Peereview", color="#2f4f4f", speedbar=True)
