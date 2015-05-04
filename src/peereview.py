@@ -194,6 +194,8 @@ def add_message(filename, line):
 
    # Increment subject id
    global subject_id
+   if not os.path.isfile(messages_file):
+      open(messages_file, 'w').close()
    if not is_file_wr():
       return
  
