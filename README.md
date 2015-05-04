@@ -3,7 +3,7 @@ GNAT GPS plug-in to make Peer Review using the GPS interface
 
 <b>INSTALL</b>
 
-To install it, move peereview.py and peereview.xml to <GPS install dir>/share/gps/plug-ins
+To install it, move peereview.py and peereview.xml to {GPS install dir}/share/gps/plug-ins
 
 GPS must be close and launch again if it was open when moving the files.
 
