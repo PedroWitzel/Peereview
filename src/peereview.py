@@ -1,4 +1,5 @@
 import GPS
+import getpass
 import re
 import os
 from gi.repository import Gtk, GLib, Gdk, GObject
@@ -170,7 +171,7 @@ class AnswerWindow(Gtk.Window):
       insert_idx = insert_idxs[0] if insert_idxs is not None and len(insert_idxs) > 0 else len(lines)
 
       # Insert line in opened file
-      lines.insert(insert_idx, "%s:%s: at line %s %s\n" % (self.filename, self.line, self.line, self.text_entry.get_text()))
+      lines.insert(insert_idx, "%s:%s: at line %s [%s] %s\n" % (self.filename, self.line, self.line, getpass.getuser(), self.text_entry.get_text()))
 
       # Update file
       with open(messages_file, "w") as f:
@@ -209,7 +210,7 @@ def add_message(filename, line):
    subject_id = subject_id + 1
 
    # Create the message pattern to open in Locations window
-   entry = "%s:%s: #%s:%s" % (filename, line, subject_id, message[0])
+   entry = "%s:%s: #%s:[%s] %s" % (filename, line, subject_id, getpass.getuser(), message[0])
 
    # Append new message in file
    with open(messages_file, "a") as comment:
