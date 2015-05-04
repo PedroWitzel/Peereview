@@ -170,7 +170,7 @@ class AnswerWindow(Gtk.Window):
       insert_idx = insert_idxs[0] if insert_idxs is not None and len(insert_idxs) > 0 else len(lines)
 
       # Insert line in opened file
-      lines.insert(insert_idx, "%s:%s: %s:%s %s\n" % (self.filename, self.line, self.filename, self.line, self.text_entry.get_text()))
+      lines.insert(insert_idx, "%s:%s: at line %s %s\n" % (self.filename, self.line, self.line, self.text_entry.get_text()))
 
       # Update file
       with open(messages_file, "w") as f:
