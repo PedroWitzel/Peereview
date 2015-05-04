@@ -84,13 +84,11 @@ class CloseWindow(Gtk.Window):
             if idx not in range(start_idx, end_idx):
                f.write(lines[idx])
  
-      # Clear Peereview locations
-      GPS.Locations.remove_category(category)
-
-      # Reload file to add all comments
-      for comment in open(messages_file):
-         GPS.Locations.parse(output=comment.rstrip('\n'), category=category, highlight_category="Peereview")
-      
+      # Find element with subject and remove it
+      locations_subject=[i for i in GPS.Message.list() if subject in i.get_text()]
+      if len(locations_subject) > 0:
+         locations_subject[0].remove() 
+    
       self.destroy()
 
 
@@ -216,7 +214,12 @@ def add_message(filename, line):
    with open(messages_file, "a") as comment:
       comment.write("%s\n" % entry)
 
-   reload_file()
+   GPS.Locations.add(category=category, 
+                     file=GPS.File(filename), 
+                     line=int(line),
+                     column=1,
+                     message="#%s:[%s] %s" % (subject_id, getpass.getuser(), message[0]),
+                     highlight="Peereview")
 
 
 def reload_file():
