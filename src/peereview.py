@@ -179,7 +179,7 @@ class AnswerWindow(Gtk.Window):
       GPS.Locations.remove_category(category)
 
       # Reload file to add all comments
-      for comment in open(messages_file):
+      for comment in open(messages_file, "r"):
          GPS.Locations.parse(output=comment.rstrip('\n'), category=category, highlight_category="Peereview")
       
       self.destroy()
@@ -227,7 +227,7 @@ def reload_file():
    GPS.Locations.remove_category(category)
 
    # Reload file to add all comments
-   for comment in open(messages_file):
+   for comment in open(messages_file, "r"):
       GPS.Locations.parse(output=comment.rstrip('\n'), category=category, highlight_category="Peereview")
 
    
@@ -288,11 +288,8 @@ def load(name=0):
    global subject_id
 
    if os.path.isfile(messages_file) and is_file_wr():
-      # Clean Locations
-      GPS.Locations.remove_category(category)
-      # Load file into the Locations view
-      with open(messages_file, "r") as msg_file:
-         GPS.Locations.parse(output="".join(msg_file.readlines()), category=category, highlight_category="Peereview")
+      # Load file
+      reload_file()
 
       # Update maximum subject id
       subjects = get_subjects('''.*''', '''\d+''')
