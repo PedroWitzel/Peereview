@@ -2,8 +2,6 @@ import imp
 import getpass
 import re
 import os
-from gi.repository import Gtk, GLib, Gdk, GObject
-
 
 messages_file = "peereview.gnat"
 category = "Peereview"
@@ -58,6 +56,7 @@ XML = r"""<?xml version="1.0"?>
 try:
    imp.find_module("GPS")
    import GPS
+   from gi.repository import Gtk, GLib, Gdk, GObject
 
    class CloseWindow(Gtk.Window):
       def __init__(self, filename, line, subject_ids):
@@ -352,16 +351,13 @@ try:
 
 except ImportError:
    def get_install_dir(program):
-      def is_exe(fpath):
-         return
-
       fpath, fname = os.path.split(program)
       if fpath:
-         if is_exe(program):
+         if os.path.isfile(program) and os.access(program, os.X_OK):
             return program
       else:
          for path in os.environ["PATH"].split(os.pathsep):
-            path = path.strip('"')
+            path = path.strip('"')            
             exe_file = os.path.join(path, program)
             if os.path.isfile(exe_file) and os.access(exe_file, os.X_OK):
                 return path
@@ -370,5 +366,12 @@ except ImportError:
 
    import shutil
    # Copy this file to the gps installation directory
+   gps_path = ""
+   if "nt" in os.name or "win" in os.name:
+      gps_path = get_install_dir("gps.exe")
+   else:
+       gps_path = get_install_dir("gps")
+
+   # Copy this file to installation directory
    shutil.copy(os.path.realpath(__file__),
-               os.path.join(get_install_dir("gps"), "..", "share", "gps", "plug-ins"))
+               os.path.join(gps_path, "..", "share", "gps", "plug-ins"))
